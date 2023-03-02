@@ -1,0 +1,99 @@
+version: "3.8"
+
+  # ----------------------- Ports Used -------------------------- #
+  # Nginx:
+  #   - HTTP Traffic = 80
+  #   - HTTPS Traffic = 443
+  #
+  # Ports used: (not relevant because we use a reverse proxy)
+  #   - Grafana = 3000
+  #   - API = 80
+  #   - Prometheus = 9090
+  # ------------------------------------------------------------- #
+
+
+services:
+  # -----------------------  API -------------------------------- #
+  api: 
+    build:
+      context: api
+      target: builder
+    container_name: ip-api
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    # flask requires SIGINT to stop gracefully
+    # (default stop signal from Compose is SIGTERM)
+    stop_signal: SIGINT
+    expose:
+      - 8000
+    volumes:
+      - ./api/data:/app/data
+      - ./api/src:/app/src
+
+    networks:
+      - admin
+  # ------------------------------------------------------------- #
+
+  # -----------------------  Proxy ------------------------------ #
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - '80:80' 
+      - '443:443'
+    volumes:
+      - ./nginx/html/:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl-certs:/etc/ssl/private
+    networks:
+      - admin
+  # ------------------------------------------------------------- #
+
+  # -----------------------  Grafana ---------------------------- #
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    restart: unless-stopped
+    depends_on:
+      - nginx
+    expose:
+      - 3000
+    volumes:
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - grafana-data:/var/lib/grafana
+      - grafana-logs:/var/log/grafana
+    networks:
+      - admin
+  # ------------------------------------------------------------- #
+
+  # -----------------------  Prometheus ------------------------- #
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+    networks:
+      - admin
+  # ------------------------------------------------------------- #
+
+networks:
+  admin:
+    name: network_admin
+
+volumes:
+  # Volumes for grafana
+  grafana-data:
+  grafana-logs:
+
+  # Volumes for prometheus
+  prom_data:
