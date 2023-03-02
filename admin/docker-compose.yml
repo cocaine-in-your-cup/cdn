@@ -48,6 +48,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/ssl-certs:/etc/ssl/private
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd
     networks:
       - admin
   # ------------------------------------------------------------- #
@@ -76,8 +77,10 @@ services:
     container_name: prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-    ports:
-      - 9090:9090
+      - '--web.route-prefix=/prometheus/'
+      - '--web.external-url=/prometheus/'
+    expose:
+      - 9090
     restart: unless-stopped
     volumes:
       - ./prometheus:/etc/prometheus
