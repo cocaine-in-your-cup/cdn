@@ -91,11 +91,3 @@ services:
         # keywords: "self hosted reddit"
         url: "grafana"
         # target: "_blank" # optional html a tag target attribute
-  - name: "Database"
-    icon: "fas fa-database"
-    items:
-      - name: "Prometheus"
-        logo: "assets/tools/prometheus.png"
-        subtitle: "Monitoring system & time series database"
-        tag: "database"
-        url: "prometheus"

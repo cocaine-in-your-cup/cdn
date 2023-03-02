@@ -7,10 +7,8 @@ version: "3.8"
   #
   # Ports used: (not relevant because we use a reverse proxy)
   #   - Grafana = 3000
-  #   - API = 80
-  #   - Prometheus = 9090
+  #   - API = 8000
   # ------------------------------------------------------------- #
-
 
 services:
   # -----------------------  API -------------------------------- #
@@ -71,24 +69,6 @@ services:
       - admin
   # ------------------------------------------------------------- #
 
-  # -----------------------  Prometheus ------------------------- #
-  prometheus:
-    image: prom/prometheus
-    container_name: prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--web.route-prefix=/prometheus/'
-      - '--web.external-url=/prometheus/'
-    expose:
-      - 9090
-    restart: unless-stopped
-    volumes:
-      - ./prometheus:/etc/prometheus
-      - prom_data:/prometheus
-    networks:
-      - admin
-  # ------------------------------------------------------------- #
-
 networks:
   admin:
     name: network_admin
@@ -97,6 +77,3 @@ volumes:
   # Volumes for grafana
   grafana-data:
   grafana-logs:
-
-  # Volumes for prometheus
-  prom_data:
