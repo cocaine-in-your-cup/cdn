@@ -5,6 +5,21 @@ import requests
 
 app = Flask(__name__)
 
+# Opens and updates json file
+def update_file(obj):
+    with open ('../data/log_request.json', mode="r+") as file:
+        file.seek(0,2)
+        position = file.tell() - 2
+        file.seek(position)
+        file.write(str(","+json.dumps(obj)+"]}"))
+    return
+
+# Returns logs of request
+@app.route('/monitor', methods=['GET'])
+def stats_monitor():
+    # add condition for when the file doesnt exist
+    return json.load(open('../data/log_request.json'))
+
 # Returns geolocation info from ip addr
 def get_location(ip):
     ip_address = ip
@@ -31,6 +46,9 @@ def closest_ip():
 
     # Get the geolocation of the request ip
     req_ip = get_location(req_ip)
+
+    # Append request to the log file
+    update_file(req_ip)
 
     # Initialize variables to hold the closest IP and distance
     closest_ip = None

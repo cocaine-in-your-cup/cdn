@@ -1,0 +1,6 @@
+scrape_configs:
+  - job_name: 'my_job'
+    scrape_interval: 5s
+    metrics_path: '/monitor'
+    static_configs:
+      - targets: ['ip-api:8000']
