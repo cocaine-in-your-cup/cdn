@@ -78,6 +78,21 @@ https://storage.googleapis.com/download/storage/v1/b/decentrilized-cdn-na-east-1
 gsutil iam ch allUsers:objectViewer gs://{BUCKET_NAME}
 ```
 
+### Make bucket CORS enabled 
+
+Create a file *cors-json-file.json*
+
+    [
+        {
+            "origin": ["*"],
+            "method": ["*"]
+        }
+    ]
+
+```bash
+gsutil cors set cors-json-file.json gs://my-awesome-bucket
+```
+
 # Questions
 
 - [x] ~~What's the latency's required upper bound? When can we consider a server close enough to the user? Is one server (with horizontal scaling) for each region enough?~~

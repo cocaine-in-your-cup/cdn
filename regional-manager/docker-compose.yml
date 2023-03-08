@@ -1,0 +1,31 @@
+version: "3.8"
+
+  # ----------------------- Ports Used -------------------------- #
+  # Nginx:
+  #   - HTTP Traffic = 80
+  #   - HTTPS Traffic = 443
+  # ------------------------------------------------------------- #
+
+services:
+  # -----------------------  Proxy ------------------------------ #
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    environment:
+        # GCS_BUCKET_URL: "decentrilized-cdn-na-east-1"
+        EXTERNAL_IP: "34.29.142.199"
+    ports:
+      - '80:80' 
+      - '443:443'
+    volumes:
+      - ./nginx/html/:/var/www/html
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl-certs:/etc/ssl/private
+    networks:
+      - regional
+  # ------------------------------------------------------------- #
+networks:
+  regional:
+    name: network_regional
