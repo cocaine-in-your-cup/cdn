@@ -4,7 +4,7 @@ import urllib.parse
 import requests
 import itertools
 
-BASE_URL = "https://storage.googleapis.com/"
+BASE_URL = ".storage.googleapis.com/"
 # List of backend servers
 BACKEND_SERVERS = [
     "decentrilized-cdn-na-east-1",
@@ -29,7 +29,7 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         backend_url = next(RR)
 
         # Construct the full backend URL including the path
-        full_backend_url = urllib.parse.urljoin(BASE_URL, backend_url + url_path)
+        full_backend_url = urllib.parse.urljoin("https://" + backend_url, BASE_URL + url_path)
 
         
         # Set header to request to google bucket, needs x-goog-project-id for authentication
@@ -45,6 +45,9 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         # Send the backend server response headers to the client
         self.send_response(response.status_code)
         self.send_header("Content-type", response_content_type)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        # self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
+        # self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type")
         self.end_headers()
 
         # Stream the response content to the client in chunks
