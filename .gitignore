@@ -161,3 +161,38 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# OpenSSL-related files best not committed
+
+## Certificate Authority
+*.ca
+
+## Certificate
+*.crt
+
+## Certificate Sign Request
+*.csr
+
+## Certificate
+*.der
+
+## Key database file
+*.kdb
+
+## OSCP request data
+*.org
+
+## PKCS #12
+*.p12
+
+## PEM-encoded certificate data
+*.pem
+
+## Random number seed
+*.rnd
+
+## SSLeay data
+*.ssleay
+
+## S/MIME message
+*.smime

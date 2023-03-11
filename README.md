@@ -93,6 +93,16 @@ Create a file *cors-json-file.json*
 gsutil cors set cors-json-file.json gs://my-awesome-bucket
 ```
 
+# Create a group and a folder to share for multiple user
+
+    sudo groupadd projectGroup
+    sudo mkdir /home/sharedFolder/
+    sudo chgrp projectGroup /home/sharedFolder
+    sudo chmod 770 /home/sharedFolder/
+    sudo chmod +s /home/sharedFolder 
+    sudo usermod -a -G projectGroup joaquim_tiago1999
+    sudo usermod -a -G projectGroup luismdsleite
+    
 # Questions
 
 - [x] ~~What's the latency's required upper bound? When can we consider a server close enough to the user? Is one server (with horizontal scaling) for each region enough?~~
