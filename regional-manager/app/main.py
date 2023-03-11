@@ -10,7 +10,7 @@ ip = os.environ.get('REGION_PROXY')
 if not ip:
     raise ValueError('REGION_PROXY environment variable is not set')
     
-url = 'http://' + ip
+url = 'http://' + ip + '/'
 
 # Define the table structure
 class ItemTable(Table):
