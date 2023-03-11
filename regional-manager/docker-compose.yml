@@ -16,8 +16,8 @@ services:
     ports:
       - '80:8000' 
     volumes:
-      - ./proxy/data:/app/data
-      - ./proxy/src:/app/src
+      - ./proxy/data:/usr/src/app/data
+      - ./proxy/src:/usr/src/app/src
     networks:
       - regional
   # ------------------------------------------------------------- #

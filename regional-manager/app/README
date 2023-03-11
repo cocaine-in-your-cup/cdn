@@ -1,0 +1,9 @@
+# Build image commad
+
+    docker build --build-arg var_name=VARIABLE_NAME
+    exemple for the region of eu:
+        docker build --build-arg REGION_PROXY=34.76.212.96 --build-arg PORT=8000 .
+        
+Vars needed:
+    REGION_PROXY=IP of proxy
+    PORT=port of the service on cloud run
