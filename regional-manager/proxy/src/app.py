@@ -3,6 +3,7 @@ import socketserver
 import urllib.parse
 import requests
 import itertools
+import uuid
 
 BASE_URL = "https://storage.googleapis.com/"
 # List of backend servers
@@ -13,6 +14,9 @@ BACKEND_SERVERS = [
 
 # Initialize the round-robin iterator
 RR = itertools.cycle(BACKEND_SERVERS)
+
+# Map of session IDs to backend servers
+SESSIONS = {}
 
 class ProxyHandler(http.server.BaseHTTPRequestHandler):
 
@@ -25,8 +29,20 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(404)
             return
 
+        # Get the session cookie, if present
+        session_id = None
+        if 'Cookie' in self.headers:
+            for cookie in self.headers['Cookie'].split(';'):
+                name, value = cookie.strip().split('=')
+                if name == 'session_id':
+                    session_id = value
+
         # Get the next backend server URL from the round-robin iterator
-        backend_url = next(RR)
+        if session_id is None or session_id not in SESSIONS:
+            backend_url = next(RR)
+            SESSIONS[session_id] = backend_url
+        else:
+            backend_url = SESSIONS[session_id]
 
         # Construct the full backend URL including the path
         full_backend_url = urllib.parse.urljoin(BASE_URL,  backend_url + url_path)
@@ -46,12 +62,17 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(response.status_code)
         self.send_header("Content-type", response_content_type)
         self.send_header("Access-Control-Allow-Origin", "*")
-        # self.send_header("Access-Control-Allow-Methods", "GET, OPTIONS")
-        # self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type")
-        self.end_headers()
 
+        # Set the session cookie if not already set
+        if session_id is None:
+            session_id = str(uuid.uuid4())
+            SESSIONS[session_id] = backend_url
+            self.send_header('Set-Cookie', f'session_id={session_id}')
+
+        self.end_headers()
+        
         # Stream the response content to the client in chunks
-        for chunk in response.iter_content(chunk_size=1024):
+        for chunk in response.iter_content(chunk_size=4096):
             if chunk:
                 print("chunk = ", chunk)
                 self.wfile.write(chunk)
