@@ -13,11 +13,14 @@ services:
       context: proxy
     container_name: proxy
     restart: unless-stopped
+    environment:
+      - PORT=8000
     ports:
       - '80:8000' 
     volumes:
-      - ./proxy/data:/usr/src/app/data
-      - ./proxy/src:/usr/src/app/src
+      - ./proxy/main.py:/app/main.py
+      - ./proxy/app.py:/app/app.py
+
     networks:
       - regional
   # ------------------------------------------------------------- #
