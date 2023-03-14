@@ -30,8 +30,6 @@ BACKEND_SERVERS = [
 # Initialize the round-robin iterator
 RR = itertools.cycle(BACKEND_SERVERS)
 
-# Map of session IDs to backend servers
-SESSIONS = {}
 
 class ProxyHandler(http.server.BaseHTTPRequestHandler):
 
@@ -44,22 +42,8 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
             self.send_error(404)
             return
 
-        # Get the session cookie, if present
-        session_id = None
-        if 'Cookie' in self.headers:
-            for cookie in self.headers['Cookie'].split(';'):
-                name, value = cookie.strip().split('=')
-                if name == 'session_id':
-                    session_id = value
-
-        # Get the next backend server URL from the round-robin iterator
-        if session_id is None or session_id not in SESSIONS:
-            backend_url = next(RR)
-            SESSIONS[session_id] = backend_url
-        else:
-            backend_url = SESSIONS[session_id]
-
-        logging.info("SESSIONS: %s", SESSIONS)
+        
+        backend_url = next(RR)
 
         # Construct the full backend URL including the path
         full_backend_url = urllib.parse.urljoin(BASE_URL,  backend_url + url_path)
@@ -74,12 +58,6 @@ class ProxyHandler(http.server.BaseHTTPRequestHandler):
         self.send_response(response.status_code)
         self.send_header("Content-type", response.headers.get('Content-Type'))
         self.send_header("Access-Control-Allow-Origin", "*")
-
-        # Set the session cookie if not already set
-        if session_id is None:
-            session_id = str(uuid.uuid4())
-            SESSIONS[session_id] = backend_url
-            self.send_header('Set-Cookie', f'session_id={session_id}')
 
         self.end_headers()
         
