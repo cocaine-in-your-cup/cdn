@@ -38,9 +38,8 @@ def uploadFile():
         abort(HTTPStatus.NOT_FOUND, description="No file selected")
     if file and file.filename:
         file_name = secure_filename(file.filename)
-        # for ip in list_regional_managers_ips(projectID).values():
-        #     url = f"https://{ip}:{region_managers_port}"
-        for ip in {"region manager" : "127.0.0.1" }.values():
+        # for ip in {"region manager" : "127.0.0.1" }.values():
+        for ip in list_regional_managers_ips(projectID).values():
             url = f"https://{ip}:{region_managers_port}/files"
             # print("stream ", file.stream.read())  
             region_manager_ssl_key = f'{cert_folder}key_region_manager.pem'
