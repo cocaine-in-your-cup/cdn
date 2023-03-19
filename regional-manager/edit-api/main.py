@@ -25,6 +25,12 @@ def hello_world():
 
 @app.route("/files", methods=['POST'])
 def uploadFile():
+    """
+    Propagate a file upload to all the buckets under its region.
+    Warning: Accepts self-signed SSL certificates
+    Warning: No Oauth2.0 added
+    Warning: Single Threaded making it quite slow and not scalable
+    """
     # check if the post request has the file part
     if 'file' not in request.files:
         abort(HTTPStatus.NOT_FOUND, description="No file part found")
@@ -66,12 +72,9 @@ def uploadToBucket(bucket_id: str, file_name: str, file_content: IO[bytes]):
     #       file_content, "in", bucket_id)
 
 
-host = os.environ.get('FLASK_SERVER_HOST',
-                      "Environment variable does not exist")
-port = os.environ.get('FLASK_SERVER_PORT',
-                      "Environment variable does not exist")
-cert_path = os.environ.get('CERT_FOLDER',
-                      "Environment variable does not exist")
+host = os.environ.get('FLASK_SERVER_HOST')
+port = os.environ.get('FLASK_SERVER_PORT')
+cert_path = os.environ.get('CERT_FOLDER')
 
 if __name__ == '__main__':
     # Launch the application
