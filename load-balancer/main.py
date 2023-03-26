@@ -25,25 +25,24 @@ BACKEND_SERVERS = [
 # Initialize the round-robin iterator
 RR = itertools.cycle(BACKEND_SERVERS)
 
-@app.before_request
-def block_http_methods():
-    if request.method != 'GET':
-        return jsonify({'error': 'HTTP method not allowed'}), 405
-
-@app.errorhandler(404)
-def page_not_found(error):
-    return jsonify({'Error': 'Page not found'}), 404
-    
+@app.route('/', methods=['GET'])
 @app.route('/<key>', methods=['GET'])
-def download(key):
+def download(key=None):
     # Go to the next backend
     backend_url = next(RR)
 
-    # Logs backend being used and URL Path
-    app.logger.info("Using '%s' to process GET /%s", backend_url, key)
+    if key:
+        # Logs backend being used and URL Path
+        app.logger.info("Using '%s' to process GET /%s", backend_url, key)
 
-    # Construct the full backend URL including the path
-    full_backend_url = urllib.parse.urljoin(BASE_URL,  backend_url + "/" + key)
+        # Construct the full backend URL including the path
+        full_backend_url = urllib.parse.urljoin(BASE_URL,  backend_url + "/" + key)
+    else:
+        # Logs backend being used and URL Path
+        app.logger.info("Using '%s' to process GET /", backend_url)
+
+        # Construct the full backend URL including the path
+        full_backend_url = urllib.parse.urljoin(BASE_URL,  backend_url + "/")
 
     # Download the file using requests.get()
     response = requests.get(full_backend_url, stream=True)

@@ -10,7 +10,7 @@ services:
   # -----------------------  Proxy ------------------------------ #
   proxy:
     build:
-      context: proxy
+      context: .
     container_name: proxy
     restart: unless-stopped
     environment:
@@ -20,12 +20,5 @@ services:
     ports:
       - '80:8000' 
     volumes:
-      - ./proxy/main.py:/app/main.py
-      - ./proxy/app.py:/app/app.py
-
-    networks:
-      - regional
+      - ./main.py:/app/main.py
   # ------------------------------------------------------------- #
-networks:
-  regional:
-    name: network_regional
