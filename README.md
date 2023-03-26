@@ -22,7 +22,7 @@ A CDN service (like cloudfare and akamai) using google cloud services. Servers a
 
 ## Architecture
 
-<img title="" src="diagram/distributed_cdn.png" alt="Design" data-align="inline">
+<img title="" src="docs/diagram/distributed_cdn.png" alt="Design" data-align="inline">
 
 ### Normal Flow of a file upload
 
@@ -102,7 +102,21 @@ gsutil cors set cors-json-file.json gs://my-awesome-bucket
     sudo chmod +s /home/sharedFolder 
     sudo usermod -a -G projectGroup joaquim_tiago1999
     sudo usermod -a -G projectGroup luismdsleite
-    
+
+# Cloud Run
+## Required Environment Variables
+
+### Proxy
+    - CHUNK_SIZE=4096
+    - THREADS=80 # Match this number with connections per container
+    - PORT=8080 #Put this in the container port form
+
+### User App
+    - REGION_PROXY
+    - CHUNK_SIZE=4096
+    - THREADS=80 # Match this number with connections per container
+    - PORT=8080 #Put this in the container port form
+
 # Questions
 
 - [x] ~~What's the latency's required upper bound? When can we consider a server close enough to the user? Is one server (with horizontal scaling) for each region enough?~~

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_file, Response
+from flask import Flask, render_template, send_file, Response, redirect, url_for
 from flask_table import Table, Col, LinkCol
 import requests
 import xml.etree.ElementTree as ET
@@ -20,7 +20,7 @@ class ItemTable(Table):
     last_modified = Col('LastModified')
     etag = Col('ETag')
     size = Col('Size')
-    download_ref = LinkCol('Download', 'download', url_kwargs=dict(key='key'))
+    download_ref = LinkCol('Download', 'download', url_kwargs=dict(key='key'), anchor_attrs={'download': True})
 
 @app.route('/<key>', methods=['GET'])
 def download(key):
@@ -39,7 +39,7 @@ def download(key):
 
     # Create a generator function to yield the file data in chunks
     def generate():
-        for chunk in response.iter_content(chunk_size=1024):
+        for chunk in response.iter_content(chunk_size=4096):
             if chunk:
                 yield chunk
 
