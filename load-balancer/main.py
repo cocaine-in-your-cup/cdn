@@ -4,6 +4,7 @@ import requests
 import itertools
 import os
 import logging
+import xml.etree.ElementTree as ET
 
 app = Flask(__name__)
 
@@ -24,8 +25,31 @@ if not BACKEND_SERVERS:
     
 # Initialize the round-robin iterator
 RR = itertools.cycle(BACKEND_SERVERS)
+backend_url = ""
 
 @app.route('/', methods=['GET'])
+def index():
+    # Go to the next backend
+    backend_url = next(RR)
+    full_backend_url = urllib.parse.urljoin(BASE_URL,  backend_url + "/")
+
+    response = requests.get(full_backend_url)
+
+    xml_string = response.content.decode('utf-8')
+    root = ET.fromstring(xml_string)
+    
+    # Gets name of bucket
+    name = root.findtext('{http://doc.s3.amazonaws.com/2006-03-01}Name')
+    # Get the table data
+    items = []
+    for elem in root.iter('{http://doc.s3.amazonaws.com/2006-03-01}Contents'):
+        items.append({'key': elem.findtext('{http://doc.s3.amazonaws.com/2006-03-01}Key'),
+                      'generation': elem.findtext('{http://doc.s3.amazonaws.com/2006-03-01}Generation'),
+                      'meta_generation': elem.findtext('{http://doc.s3.amazonaws.com/2006-03-01}MetaGeneration'),
+                      'last_modified': elem.findtext('{http://doc.s3.amazonaws.com/2006-03-01}LastModified'),
+                      'etag': elem.findtext('{http://doc.s3.amazonaws.com/2006-03-01}ETag'),
+                      'size': elem.findtext('{http://doc.s3.amazonaws.com/2006-03-01}Size')})
+    return items
 @app.route('/<key>', methods=['GET'])
 def download(key=None):
     # Go to the next backend
