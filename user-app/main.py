@@ -20,7 +20,7 @@ class ItemTable(Table):
     last_modified = Col('LastModified')
     etag = Col('ETag')
     size = Col('Size')
-    download_ref = LinkCol('Download', 'download', url_kwargs=dict(key='key'), anchor_attrs={'download': True})
+    # download_ref = LinkCol('Download', 'download', url_kwargs=dict(key='key'), anchor_attrs={'download': True})
 
 @app.route('/<key>', methods=['GET'])
 def download(key):
@@ -31,10 +31,13 @@ def download(key):
     if response.status_code != 200:
         return "Error: Failed to download file"
 
+    # Extract the file name from the key
+    file_name = key.split('/')[-1]
+
     # Set the content type and disposition headers
     headers = {
         'Content-Type': response.headers.get('Content-Type'),
-        'Content-Disposition': 'attachment; filename={}'.format(response.headers.get('Content-Disposition'))
+        'Content-Disposition': f'attachment; filename={file_name}'
     }
 
     # Create a generator function to yield the file data in chunks
