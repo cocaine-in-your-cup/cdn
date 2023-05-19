@@ -7,19 +7,19 @@ import requests
 app = Flask(__name__)
 
 # Opens and updates json file
-def update_file(obj):
-    with open ('../data/log_request.json', mode="r+") as file:
-        file.seek(0,2)
-        position = file.tell() - 2
-        file.seek(position)
-        file.write(str(","+json.dumps(obj)+"]}"))
-    return
+# def update_file(obj):
+#     with open ('../data/log_request.json', mode="r+") as file:
+#         file.seek(0,2)
+#         position = file.tell() - 2
+#         file.seek(position)
+#         file.write(str(","+json.dumps(obj)+"]}"))
+#     return
 
 # Returns logs of request
-@app.route('/monitor', methods=['GET'])
-def stats_monitor():
-    # add condition for when the file doesnt exist
-    return json.load(open('../data/log_request.json'))
+# @app.route('/monitor', methods=['GET'])
+# def stats_monitor():
+#     # add condition for when the file doesnt exist
+#     return json.load(open('../data/log_request.json'))
 
 
 def find_object_in_array(array, key, value):
@@ -81,7 +81,7 @@ def closest_ip(subpath=None):
    
     req_ip = get_location(req_ip)
     # Append request to the log file
-    update_file(req_ip)
+    # update_file(req_ip)
     # Initialize variables to hold the closest IP and distance
     closest_ip = None
     min_distance = float('inf')
