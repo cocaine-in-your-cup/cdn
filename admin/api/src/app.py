@@ -46,17 +46,17 @@ ip_list = []
 ip_obj = [
       {
         "ip": "35.157.233.239",  
-        "url": "edge-service-eu-7nricgvmca-ew.a.run.app",  
+        "url": "proxy-service-eu-7nricgvmca-ew.a.run.app",  
         "name": "Europe"
       },
       {
         "ip": "218.100.43.118",
-        "url": "edge-service-as-7nricgvmca-as.a.run.app", 
+        "url": "proxy-service-as-7nricgvmca-as.a.run.app", 
         "name": "Asia"
       },
       {
         "ip": "47.90.204.112",
-        "url": "edge-service-us-7nricgvmca-uc.a.run.app", 
+        "url": "proxy-service-us-7nricgvmca-uc.a.run.app", 
         "name": "United States"
       }
 ]
