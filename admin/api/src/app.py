@@ -91,5 +91,14 @@ def closest_ip(subpath=None):
     else: 
         return redirect(str("https://" + found_object["url"] + "/" + subpath), code=302)
 
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def redirect_to_cdn_lb_ip(path):
+    if not path.startswith('cdn/lb/ip'):
+        redirect_url = '/cdn/lb/ip'
+        return redirect(redirect_url, code=302)
+    else:
+        return closest_ip()
+    
 if __name__ == '__main__':
     app.run()
