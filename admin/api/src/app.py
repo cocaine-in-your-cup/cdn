@@ -66,18 +66,18 @@ ip_obj = [
 #     ip_list.append(get_location(i["ip"]))
 for i in ip_obj:
     ip_list.append(get_location(i["ip"]))
-    
+
 @app.route('/cdn/lb/ip', methods=['GET'])
 @app.route('/cdn/lb/ip/<path:subpath>', methods=['GET'])
 def closest_ip(subpath=None):
     # Get the request IP
     req_ip = request.headers.get('X-Real-IP')
 
+    print(request.headers, " ----------------- ")
     # Get the geolocation of the request ip
     req_ip = get_location(req_ip)
     # Append request to the log file
     update_file(req_ip)
-
     # Initialize variables to hold the closest IP and distance
     closest_ip = None
     min_distance = float('inf')
