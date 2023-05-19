@@ -17,11 +17,11 @@ if __name__ != '__main__':
 BASE_URL = "https://storage.googleapis.com/"
 
 # List of backend servers
-BACKEND_SERVERS = [
-    "decentrilized-cdn-eu-central-2",
-    "decentrilized-cdn-eu-west-1"
-]
+BACKEND_SERVERS = os.environ.get('BACKEND_SERVERS', '').split(',')
 
+if not BACKEND_SERVERS:
+    raise ValueError('BACKEND_SERVERS environment variable is not set')
+    
 # Initialize the round-robin iterator
 RR = itertools.cycle(BACKEND_SERVERS)
 
