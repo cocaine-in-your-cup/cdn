@@ -73,8 +73,12 @@ def closest_ip(subpath=None):
     # Get the request IP
     req_ip = request.headers.get('X-Real-IP')
 
-    print(request.headers, " ----------------- ")
-    # Get the geolocation of the request ip
+    ip_address = request.headers.get('X-Forwarded-For')
+    # If the X-Forwarded-For header is present
+    # it may contain a comma-separated list of IP addresses
+    # The client's IP address is typically the first address in the list
+    req_ip = ip_address.split(',')[0].strip()
+   
     req_ip = get_location(req_ip)
     # Append request to the log file
     update_file(req_ip)
