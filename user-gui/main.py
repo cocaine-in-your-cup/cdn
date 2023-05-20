@@ -54,46 +54,40 @@ def fetch_data(url):
         print(f"Error fetching data: {e}")
         return
 
-def on_select(url, selected_item, text_output):
-    if selected_item:
-        values = selected_item['values']
-        if values:
-            url_to_download = f"{url}/{values[0]}"
-            print(url_to_download)
-            text_output = url_to_download
+
 
 def download_file(url_to_download, file_path):
     # download list of files
     # fetched_keys = [item["key"] for item in fetch_data(url_to_download)]
-    # check if filename is in the list
+    # # check if filename is in the list
     # if file_path not in fetched_keys:
-        # print(f"Invalid filename. '{file_path}' is not a valid key in the fetched data.")
-        # return
+    #     print(f"Invalid filename. '{file_path}' is not a valid key in the fetched data.")
+    #     return
     
     fullPath = urljoin(url_to_download, file_path)    
+    try:
+        with requests.get(fullPath, stream=True) as response:
+            response.raise_for_status()
+            total_size = int(response.headers.get('Content-Length', 0))
+            print("total_size ", total_size)
+            block_size = 4096
 
-    with requests.get(fullPath, stream=True) as response:
-        response.raise_for_status()
-        total_size = int(response.headers.get('Content-Length', 0))
-        block_size = 1024
-        progress_bar_maximum = total_size
-
-        with open(file_path, 'wb') as file, tqdm(total=total_size, unit='B', unit_scale=True) as pbar:
-            for buffer in response.iter_content(block_size):
-                if not buffer:
-                    break
-                file.write(buffer)
-                progress_bar_value = len(buffer)
-                pbar.update(len(buffer))
-        print("File downloaded successfully.")
-
+            with open(file_path, 'wb') as file, tqdm(total=total_size, unit='B', unit_scale=True) as pbar:
+                for buffer in response.iter_content(block_size):
+                    if not buffer:
+                        break
+                    file.write(buffer)
+                    progress_bar_value = len(buffer)
+                    pbar.update(len(buffer))
+            print("File downloaded successfully.")
+    except Exception as e:
+        print(f"Error downloading file: {e}")
 
 def main(cdn_url):
     # entry = input("CDN-API-URL: ")
     if cdn_url:
         cdn_url_obj = connect(cdn_url)
-        # cdn_url_edge = cdn_url_obj["cdn_url"] 
-        cdn_url_edge = "https://proxy-service-eu-7nricgvmca-ew.a.run.app"
+        cdn_url_edge = cdn_url_obj["cdn_url"] 
     else:
         print("CDN-API-URL is required.")
         return

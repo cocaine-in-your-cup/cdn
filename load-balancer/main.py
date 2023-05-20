@@ -5,6 +5,7 @@ import itertools
 import os
 import logging
 import xml.etree.ElementTree as ET
+from pythonp2p import Node
 
 app = Flask(__name__)
 
@@ -13,6 +14,15 @@ if __name__ != '__main__':
     gunicorn_logger = logging.getLogger('gunicorn.error')
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
+
+
+# P2P configuration
+HOST = '0.0.0.0'
+PORT = 65432
+FILE_PORT = 65433
+
+# Initialize the P2P node
+p2p_node = Node(HOST, PORT, FILE_PORT)
 
 
 BASE_URL = "https://storage.googleapis.com/"
@@ -78,7 +88,8 @@ def download(key=None):
     # Set the content type and disposition headers
     headers = {
         'Content-Type': response.headers.get('Content-Type'),
-        'Content-Disposition': 'attachment; filename={}'.format(response.headers.get('Content-Disposition'))
+        'Content-Disposition': 'attachment; filename={}'.format(response.headers.get('Content-Disposition')),
+        'Content-Length': response.headers.get('Content-Length')
     }
 
     # Create a generator function to yield the file data in chunks
@@ -92,4 +103,5 @@ def download(key=None):
     return Response(generate(), headers=headers, status=200)
 
 if __name__ == '__main__':
+    p2p_node.start()
     app.run(debug=False, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
