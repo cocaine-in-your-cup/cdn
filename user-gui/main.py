@@ -1,12 +1,12 @@
 import argparse
 import datetime
-import json
 from urllib.parse import urljoin
 import requests
-import sys
-from urllib.request import urlopen
 from tqdm import tqdm
 import math
+
+from pythonp2p import Node
+
 
 def convert_size(size_bytes):
     if size_bytes == 0:
@@ -57,13 +57,6 @@ def fetch_data(url):
 
 
 def download_file(url_to_download, file_path):
-    # download list of files
-    # fetched_keys = [item["key"] for item in fetch_data(url_to_download)]
-    # # check if filename is in the list
-    # if file_path not in fetched_keys:
-    #     print(f"Invalid filename. '{file_path}' is not a valid key in the fetched data.")
-    #     return
-    
     fullPath = urljoin(url_to_download, file_path)    
     try:
         with requests.get(fullPath, stream=True) as response:
@@ -83,7 +76,7 @@ def download_file(url_to_download, file_path):
     except Exception as e:
         print(f"Error downloading file: {e}")
 
-def main(cdn_url):
+def main(cdn_url, p2p_node):
     # entry = input("CDN-API-URL: ")
     if cdn_url:
         cdn_url_obj = connect(cdn_url)
@@ -94,15 +87,28 @@ def main(cdn_url):
 
     while True:
 
-        command = input("Enter a command (fetch, download, exit): ")
+        command = input("Enter a command (fetch, download, p2p-join, p2p-leave, exit): ")
+        
         if command == "fetch":
             # url = input("Enter the URL: ")
             print("Fetching data from: ", cdn_url_edge)
             fetch_data(cdn_url_edge)
+
         elif command == "download":
             # url_to_download = input("Enter the URL to download: ")
             file_path = input("Enter the file name: ")
             download_file(cdn_url_edge, file_path)
+
+        elif command == "p2p-join":
+            ip = input("Enter the IP of the P2P network: ")
+            port = int(input("Enter the port of the P2P network: "))
+            p2p_node.connect_to(ip, port)
+            print("Joined the P2P network.")
+
+        elif command == "p2p-leave":
+            p2p_node.stop()
+            print("Left the P2P network.")
+
         elif command == "exit":
             break
         else:
@@ -118,6 +124,7 @@ if __name__ == "__main__":
     cdn_url = args.cdn_url
 
     if cdn_url:
-        main(cdn_url)
+        p2p_node = Node()  # Create an instance of the P2P node
+        main(cdn_url,p2p_node)
     else:
         print("CDN-API-URL is required. Use --cdn-url to specify the URL.")
