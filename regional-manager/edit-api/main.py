@@ -6,7 +6,6 @@ import asyncio
 from http import HTTPStatus
 from flask import Flask, request, abort
 from werkzeug.utils import secure_filename
-from dotenv import load_dotenv
 import os
 from google.cloud import storage
 import base64
@@ -14,6 +13,7 @@ from functools import wraps
 
 from gcloud.aio.auth import BUILD_GCLOUD_REST  # pylint: disable=no-name-in-module
 from gcloud.aio.storage import Storage
+
 # Selectively load libraries based on the package
 if BUILD_GCLOUD_REST:
     from requests import Session
@@ -23,10 +23,6 @@ else:
 storage_client = storage.Client() # Used only to list buckets
 
 # Retrieve environment variables with error checking
-jsonAuth = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
-if not jsonAuth:
-    raise ValueError('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set')
-
 region = os.environ.get('REGION')
 if not region:
     raise ValueError("REGION environment variable is not set")
