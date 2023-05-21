@@ -136,7 +136,8 @@ async def main():
     # Start the server
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, 'localhost', 8080)
+    # site = web.TCPSite(runner, 'localhost', 8080)
+    site = web.TCPSite(runner, '0.0.0.0', port=int(os.environ.get("PORT", 8080)))  # Listen on all available network interfaces
     await site.start()
     logger.info('Server started at http://localhost:8080')
     
