@@ -1,5 +1,6 @@
 import argparse
 import datetime
+import os
 from urllib.parse import urljoin
 import requests
 from tqdm import tqdm
@@ -61,10 +62,11 @@ def download_file(url_to_download, file_path):
     try:
         with requests.get(fullPath, stream=True) as response:
             response.raise_for_status()
+
             total_size = int(response.headers.get('Content-Length', 0))
-            print("total_size ", total_size)
             block_size = 4096
 
+            file_path = os.path.join(os.getcwd(), "download/" + file_path)
             with open(file_path, 'wb') as file, tqdm(total=total_size, unit='B', unit_scale=True) as pbar:
                 for buffer in response.iter_content(block_size):
                     if not buffer:
