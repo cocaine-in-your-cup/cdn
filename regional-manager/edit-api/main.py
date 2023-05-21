@@ -16,11 +16,7 @@ logger = logging.getLogger(__name__)
 
 # Retrieve USER_DB from environment variables
 user_db_env = os.environ.get('USER_DB')
-if user_db_env:
-    USER_DB = eval(user_db_env)
-    USER_DB = {str(k): v for k, v in USER_DB.items()}  # Convert keys to strings
-else:
-    USER_DB = {}
+USER_DB = eval(user_db_env) if user_db_env else {}
 
 # Selectively load libraries based on the package
 if BUILD_GCLOUD_REST:
