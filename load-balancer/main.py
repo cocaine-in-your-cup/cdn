@@ -78,7 +78,7 @@ def download(key=None):
     # Set the content type and disposition headers
     headers = {
         'Content-Type': response.headers.get('Content-Type'),
-        'Content-Disposition': 'attachment; filename={}'.format(response.headers.get('Content-Disposition')),
+        'Content-Length': response.headers.get('Content-Length')
     }
 
     # Create a generator function to yield the file data in chunks
