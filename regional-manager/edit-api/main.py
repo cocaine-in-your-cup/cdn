@@ -18,9 +18,16 @@ if BUILD_GCLOUD_REST:
 else:
     from aiohttp import ClientSession as Session
 
-load_dotenv()
 storage_client = storage.Client() # Used only to list buckets
-region: str = os.environ.get('REGION', "Environment variable does not exist")
+
+# Retrieve environment variables with error checking
+jsonAuth = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS','')
+if not jsonAuth:
+    raise ValueError('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set')
+
+region = os.environ.get('REGION','')
+if not region:
+    raise ValueError("REGION environment variable is not set")
 
 app = Flask(__name__)
     
@@ -33,7 +40,6 @@ def hello_world():
 async def uploadFile():
     """
     Propagate a file upload to all the buckets under its region.
-    Warning: Accepts self-signed SSL certificates
     Warning: No Oauth2.0 added
     """
     # check if the post request has the file part
@@ -66,11 +72,8 @@ def listBuckets(client: storage.Client, region_acronym: str) -> list[str]:
             region_buckets.append(bucket.name)
     return region_buckets
 
-host = os.environ.get('FLASK_SERVER_HOST')
-port = os.environ.get('FLASK_SERVER_PORT')
-cert_path = os.environ.get('CERT_FOLDER')
 
 if __name__ == '__main__':
     # Launch the application
-    app.run(ssl_context=(f'{cert_path}/cert.pem', f'{cert_path}/key.pem'), host=host, port=port)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
