@@ -4,7 +4,7 @@ API responsible for propagating data changes to all the buckets under its region
 
 import asyncio
 from http import HTTPStatus
-from flask import Flask, request, abort
+from flask import Flask, Response, request, abort
 from werkzeug.utils import secure_filename
 import os
 from google.cloud import storage
@@ -48,7 +48,7 @@ def requires_auth(f):
         if auth:
             username, password = base64.b64decode(auth.split(' ')[1]).decode().split(':')
             # Validate the username and password
-            if username == user and password == 'your_password':
+            if username == user and password == password:
                 return f(*args, **kwargs)
 
         # If authentication fails, return a 401 Unauthorized status
@@ -79,7 +79,7 @@ async def uploadFile():
             aio_storage_client = Storage(session=session) 
             tasks = [aio_storage_client.upload(bucket_id, file_name, file_contents) for bucket_id in listBuckets(storage_client, region.lower())]
             await asyncio.gather(*tasks, return_exceptions=True)
-        return f"<p>Uploaded {file_name} for all buckets in the {region} region!</p>"
+        return Response(f"<p>Uploaded {file_name} for all buckets in the {region} region!</p>", status=200, mimetype='text/plain')
     abort(HTTPStatus.INTERNAL_SERVER_ERROR, description="Something went wrong")
 
 
