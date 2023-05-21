@@ -9,6 +9,8 @@ from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 import os
 from google.cloud import storage
+import base64
+from functools import wraps
 
 from gcloud.aio.auth import BUILD_GCLOUD_REST  # pylint: disable=no-name-in-module
 from gcloud.aio.storage import Storage
@@ -21,13 +23,21 @@ else:
 storage_client = storage.Client() # Used only to list buckets
 
 # Retrieve environment variables with error checking
-jsonAuth = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS','')
+jsonAuth = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS')
 if not jsonAuth:
     raise ValueError('GOOGLE_APPLICATION_CREDENTIALS environment variable is not set')
 
-region = os.environ.get('REGION','')
+region = os.environ.get('REGION')
 if not region:
     raise ValueError("REGION environment variable is not set")
+
+user = os.environ.get('USER')
+if not user:
+    raise ValueError("USER environment variable is not set")
+
+password = os.environ.get('PASSWORD')
+if not password:
+    raise ValueError("USER environment variable is not set")
 
 app = Flask(__name__)
     
@@ -35,8 +45,23 @@ app = Flask(__name__)
 def hello_world():
     return "I'm up and running!"
 
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.headers.get('Authorization')
+        if auth:
+            username, password = base64.b64decode(auth.split(' ')[1]).decode().split(':')
+            # Validate the username and password
+            if username == user and password == 'your_password':
+                return f(*args, **kwargs)
+
+        # If authentication fails, return a 401 Unauthorized status
+        return abort(HTTPStatus.UNAUTHORIZED, description="Unauthorized")
+
+    return decorated
 
 @app.route("/files", methods=['POST'])
+@requires_auth
 async def uploadFile():
     """
     Propagate a file upload to all the buckets under its region.
