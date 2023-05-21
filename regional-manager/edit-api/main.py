@@ -125,7 +125,7 @@ async def upload_file_handler(request):
 
 # Main server function
 async def main():
-    app = web.Application()
+    app = web.Application(client_max_size=None)
     
     # Register the route handlers
     app.router.add_get('/protected', protected_handler)
