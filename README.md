@@ -2,13 +2,13 @@
 
 ## Goal
 
-A CDN service (like cloudfare and akamai) using google cloud services. Servers are deployed dynamically in several sites to try to ensure an upper limit on latency and also scale horizontally based on the network traffic.
+A CDN service (like cloudflare and akamai) using google cloud services. Servers are deployed dynamically in several sites to try to ensure an upper limit on latency and also scale horizontally based on the network traffic.
 
 ## Requirements
 
 ### Functional Requirements
 
-- Admin Client has the ability to upload any file to the CDN.
+- Admin Client has the ability to upload any file to the CDN,with the option to specify the target region for the file upload. (Not implemented)
 
 - Any regular user can access the CDN to download a specific file.
 
@@ -22,7 +22,7 @@ A CDN service (like cloudfare and akamai) using google cloud services. Servers a
 
 ## Architecture
 
-<img title="" src="docs/diagram/distributed_cdn.png" alt="Design" data-align="inline">
+<img title="" src="docs/distributed_cdn.png" alt="Design" data-align="inline">
 
 ### Normal Flow of a file upload
 
@@ -34,17 +34,30 @@ A CDN service (like cloudfare and akamai) using google cloud services. Servers a
 
 ### Normal Flow of a file download
 
-**To be done and added to the architecture** 
 
-### Details
+1. User requests a specific file download from the CDN by sending a request to the CDN's endpoint. The request return a proxy/load balancer endpoint, which acts as an intermediary between the user and the CDN infrastructure.
 
-- The Admin Client API and the Regional Managers are made as containers and executed via google Cloud Run.
+2. The Client App checks its local cache to see if the requested file is already available. If the file is found in the cache, the Proxy directly serves the file to other users. (Not implemented)
+
+3. If the requested file is not available in the local cache, the Proxy checks its replicated buckets to find the file. 
+
+4. Once the file is located, the Proxy retrieves it and starts transferring it to the user over a secure connection.
+
+5. During the file transfer, the user may see a progress indicator showing the download progress, such as the percentage of the file downloaded or the amount of data transferred.
+
+6.  Upon completion of the file transfer, the file is saved to the user's specified location on their local device.
+
+By incorporating a proxy or load balancer, the CDN system can distribute the incoming requests efficiently across multiple servers, balancing the load and improving the overall performance and scalability of the system. 
+
+## Details
+
+- The Admin Client API, the Regional Managers, CDN API and Proxy/Load Balancer are made as containers and executed via google Cloud Run.
 
 - The UPLOAD request (made by the Admin Client to the Admin Client API) is a HTTPS POST request.
 
 <!-- - The Admin Client API also stores the files it receives in a bucket of its own. -->
 
-- Regional Managers are responsible for creating more replicated buckets when network traffic is high to ensure the availability of the system.
+- Regional Managers are responsible for creating more replicated buckets when network traffic is high to ensure the availability of the system. (not implemented)
 
 ### Reasons for this design
 
@@ -58,71 +71,32 @@ A CDN service (like cloudfare and akamai) using google cloud services. Servers a
 
 - If desired it is also possible to enforce certain policies depending on the region (e.g., EU exclusive content to obey GDPR policies).
 
-# Trivia
+# Cost analysis
 
-### Download a file from a bucket
+Cost per cloud run service:
 
-```bash
-https://storage.googleapis.com/download/storage/v1/b/{BUCKET_NAME}/o/{FILENAME}?alt=media
-```
+|     Region     | CPU allocation type | CPU | Memory | CPU allocation time | Memory allocation time | Number of requests | Execution Time | Concurrent Requests |   Cost    |
+|:--------------:|:------------------:|:---:|:------:|:-------------------:|:----------------------:|:------------------:|:--------------:|:------------------:|:---------:|
+|    Europe     |  During Processing |  1  | 1 GiB  |   10,000 vCPU-sec   |     10,000 GiB-sec     |    10,000,000      |    100 ms      |        100         | USD 3.20  |
+|    Asia      |  During Processing |  1  | 1 GiB  |   10,000 vCPU-sec   |     10,000 GiB-sec     |    10,000,000      |    100 ms      |        100         | USD 3.20  |
+|  America   |  During Processing |  1  | 1 GiB  |   10,000 vCPU-sec   |     10,000 GiB-sec     |    10,000,000      |    100 ms      |        100         | USD 3.20  |
 
-**Download file.txt from the bucket decentrilized-cdn-na-east-1:**
+Cost per bucket service:
 
-```bash
-https://storage.googleapis.com/download/storage/v1/b/decentrilized-cdn-na-east-1/o/text.txt?alt=media
-```
+|     Region     | Total Amount of Storage | Class A operations | Inter-region Egress  |   Cost    |
+|:--------------:|:------------------:|:---:|:------:|:-------------------:|
+|    Europe | 1,024 GiB | 1 million |  Europe: 100 GiB   | USD 27.48 |
+|    Asia | 1,024 GiB | 1 million |  Asia: 100 GiB   | USD 36.55 |
+|    America | 1,024 GiB | 1 million |  North America: 100 GiB   | USD 30.55 |
 
-### Make bucket readable for everyone
+Total cost of the project:
 
-```bash
-gsutil iam ch allUsers:objectViewer gs://{BUCKET_NAME}
-```
-
-### Make bucket CORS enabled 
-
-Create a file *cors-json-file.json*
-
-    [
-        {
-            "origin": ["*"],
-            "method": ["*"]
-        }
-    ]
-
-```bash
-gsutil cors set cors-json-file.json gs://my-awesome-bucket
-```
-
-# Create a group and a folder to share for multiple user
-
-    sudo groupadd projectGroup
-    sudo mkdir /home/sharedFolder/
-    sudo chgrp projectGroup /home/sharedFolder
-    sudo chmod 770 /home/sharedFolder/
-    sudo chmod +s /home/sharedFolder 
-    sudo usermod -a -G projectGroup joaquim_tiago1999
-    sudo usermod -a -G projectGroup luismdsleite
-
-# Cloud Run
-## Required Environment Variables
-
-### Proxy
-    - CHUNK_SIZE=4096
-    - THREADS=80 # Match this number with connections per container
-    - PORT=8080 #Put this in the container port form
-
-### User App
-    - REGION_PROXY
-    - CHUNK_SIZE=4096
-    - THREADS=80 # Match this number with connections per container
-    - PORT=8080 #Put this in the container port form
-
-# Questions
-
-- [x] ~~What's the latency's required upper bound? When can we consider a server close enough to the user? Is one server (with horizontal scaling) for each region enough?~~
-
-- [x] ~~Do we need to preserve the file name of a certain file (since a UPLOAD request of a file returns a hash) when an ordinary user downloads it?~~ Yes the file name should be preserved
-
-- [x] ~~How does the admin client upload a file? Is it via a HTTP POST request, GUI, local program, ...?~~ Usually it's a REST API call.
-
-- [x] ~~How i authenticate the Admin Client? SSL Client Certificates, Token-based Auth, ...~~ OAuth 2.0
+| Count | Region |    Cloud-Run     | Storage |  Cost    |
+|:--------------:|:--------------:|:------------------:|:---:|:------:|
+|  2  | Europe | USD 6.4 | USD 54,96 | USD 61,36 |
+|  1  | Asia | USD 3.2 | - | USD 3.2 |
+|  1  | Asia | USD 3.2 | - | USD 3.2 |
+|  1  | America | USD 3.2 | - | USD 3.2 |
+|  2  | Asia | - | USD 73.1 | USD 73.1 |
+|  2  | America | - | USD 61.1 | USD 61.1 |
+|  -  | - | - | - | USD 205,16 |
